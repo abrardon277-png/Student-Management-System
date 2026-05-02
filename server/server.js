@@ -1,5 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+app.get("/", (req, res) => {
+    res.send("API is running 🚀");
+});
 const cors = require('cors');
 require('dotenv').config();
 
