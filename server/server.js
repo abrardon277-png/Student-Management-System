@@ -1,16 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const studentRoutes = require('./routes/students');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === 'production';
 
 // ── Middleware ──────────────────────────────────────────────
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: isProduction ? '*' : ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true
 }));
 app.use(express.json());
@@ -27,15 +29,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ✅ Root route (fix for Railway)
-app.get('/', (req, res) => {
-  res.send('🚀 EduVault API is live on Railway!');
-});
+// ── Serve React Frontend in Production ─────────────────────
+if (isProduction) {
+  const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientDistPath));
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
-});
+  // Catch-all: send React's index.html for any non-API route
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
+// 404 handler (only for development / API-only mode)
+if (!isProduction) {
+  app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' });
+  });
+}
 
 // Error handler
 app.use((err, req, res, next) => {
