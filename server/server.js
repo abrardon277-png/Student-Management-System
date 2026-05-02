@@ -20,7 +20,16 @@ app.use('/api/students', studentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'EduVault API is running', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'OK',
+    message: 'EduVault API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ✅ Root route (fix for Railway)
+app.get('/', (req, res) => {
+  res.send('🚀 EduVault API is live on Railway!');
 });
 
 // 404 handler
